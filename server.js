@@ -106,6 +106,6 @@ app.post('/', function (req, res) {
 	res.render('markup', {newmarkup, newmarkup, error: null});
 })
 
-app..listen(process.env.PORT || 5000, function () {
+app.listen(process.env.PORT || 5000, function () {
   console.log('Markup app listening on port 5000!')
 })
