@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css?family=Arvo|Lato" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        h3 {
+          font-family: 'Lato';
+          font-size: 22px;
+        }
+        body {
+          font-family: 'Arvo';
+          font-size: 22px;
+        }
+        .modal {
+          display: none; 
+          position: fixed;
+          z-index: 1;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+          background-color: rgb(0,0,0);
+          background-color: rgba(0,0,0,0.4);
+          padding-top: 60px;
+          font-size: 12px;
+        } 
+        .commentstillnow {
+          display:none;
+        }
+
+        .modal-content {
+          background-color: #fefefe;
+          margin: 5% auto 25% auto;
+          border: 1px solid #888;
+          width: 50%;
+        }
+
+        .close {
+          position: absolute;
+          right: 25px;
+          top: 0;
+          color: #000;
+          font-size: 35px;
+          font-weight: bold;
+        }
+
+        .container-modal {
+          padding: 16px;
+        }
+
+        .imgcontainer {
+          text-align: center;
+          margin: 24px 0 12px 0;
+          position: relative;
+        }
+
+        p {
+          width: 50%;
+          display:inline;
+        }
+
+        .submitbutton {
+          background-color: #2a5baa;
+          color: white;
+          padding: 5px 5px;
+          margin: 20px 0;
+          border: none;
+          cursor: pointer;
+          width: 50%;
+        }
+
+        .submitbutton:hover {
+          opacity: 0.8;
+        }
+    </style>
+  </head>
+  <div id="commentmodal" class="modal">
+    <form class="modal-content">
+      <div class="imgcontainer">
+        <span style="text-align: right;"><a id="modal_close" class="close" onclick="document.getElementById('commentmodal').style.display='none'; document.getElementById('commentstillnow').style.display='none' "><b>X</b></a></span>
+      </div>
+      <div class="container-modal">
+        Comment:<br>
+        <big><p id="selectedline" style="background-color:khaki"></p></big>
+        <hr>
+        <p>Add an comment:</p>
+        <br>
+        <form id="modal_comment" accept-charset="UTF-8">
+          <input type="text" class="form-control" autofocus required name="name" id = "commentauthor" placeholder="Author Name"><br>
+          <textarea required name="message" rows="4" id="commenttext" class="form-control" placeholder="Enter your comment"></textarea>
+          <input type="button" class="submitbutton" name="commentform" value="Add comment" onclick="registercomment();">
+        </form>
+        <br>
+        <div id = "commentstillnow" class ="commentstillnow">
+          <b><big>Comments:</big></b>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <body>
+    <center><h3>Responsive Markdown</h3></center><br><br>
+    <div class = "container" id = "mydiv">
+      <% var id=1;
+      newmarkup.forEach(function(element , index) { 
+      if(element === " ") { } else { %>
+        <script type="text/javascript">
+          //console.log('enter');
+          var id= "<%= id %>";
+          var ele = "<%- element %>"
+          //console.log(ele);
+          var div = document.getElementById('mydiv');
+          var span = document.createElement('span');
+          span.setAttribute('id', id);
+          span.setAttribute('onmouseover', "highlightLine(this);");
+          span.setAttribute('onmouseout', "resetTimer(this);");
+          span.setAttribute('onclick', "opencomments(this);");
+          span.innerHTML = ele;
+          //var content = document.createTextNode("<div id=\""+id+ "\">" + ele + "</span><br>");
+          //div.innerHTML ="<span id=\""+id+ "\">" + ele + "</span><br>";
+          //console.log(span);
+          div.appendChild(span);
+          //div.insertAdjacentHTML('afterend',content);
+          //div.innerHTML += '<span id="'+id+'"';
+          //'(?<=[.?!])( +|\Z)'
+          //span:hover { background:#DDD }
+        </script>
+      <% id++; } }); %>
+    </div>
+  </body>
+  <script type="text/javascript">
+    var comments = [];
+    var JSONcommentsdata;
+
+    function highlightLine(elem) {
+      myVar = setTimeout(function(){ elem.style.background = "khaki"; }, 1500);
+    }
+
+    function resetTimer(elem) {
+      clearTimeout(myVar);
+    }
+
+    function opencomments(elem) {
+      document.getElementById('commentauthor').value="";
+      document.getElementById('commenttext').value="";
+      var comment = elem.textContent;
+      document.getElementById('commentmodal').style.display='block';
+      document.getElementById('commentstillnow').style.display='none';
+      var showline = document.getElementById('selectedline');
+      showline.innerHTML=comment;
+      showline.setAttribute('line-id', elem.getAttribute('id'));
+      updatecomments(elem.getAttribute('id'));
+    }
+
+    var modal = document.getElementById('commentmodal');
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+          modal.style.display = "none";
+      }
+    }
+
+    function registercomment() {
+      var author = document.getElementById('commentauthor').value;
+      var comment = document.getElementById('commenttext').value;
+      //var id = document.querySelectorAll('[line-id]');
+      var selectedcomment = document.getElementById('selectedline');
+      var commentid = selectedcomment.getAttribute('line-id');
+      comments.push({id:commentid,name:author,cmnt:comment});
+      var JSONcommentsdata = JSON.stringify(comments);
+      updatecomments(commentid);
+      var elem = document.getElementById(commentid);
+      elem.style.background = "khaki";
+    } 
+
+    function updatecomments(id) {
+      const parent = document.getElementById("commentstillnow");
+      while (parent.firstChild) {
+        parent.firstChild.remove();
+      }
+      for(i=0;i<comments.length;i++){
+        //console.log("ID: "  + comments[i].id + " Author: "  + comments[i].name + " Comment: " + comments[i].cmnt);
+        if(comments[i].id==id)
+        {
+          var newcomment = document.createElement('div');
+          var newcommenttext = document.createElement('div');
+          var newcommentauthor = document.createElement('div');
+          var commentdiv = document.getElementById('commentstillnow');
+          newcommenttext.innerHTML = comments[i].cmnt;
+          newcommentauthor.innerHTML = '<hr><b>'+comments[i].name+'</b>';
+          newcomment.appendChild(newcommentauthor);
+          newcomment.appendChild(newcommenttext);
+          commentdiv.appendChild(newcomment);
+          commentdiv.style.display='block';
+        }
+      }
+    }
+  </script>
+</html>
